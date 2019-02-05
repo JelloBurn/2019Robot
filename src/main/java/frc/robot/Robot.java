@@ -8,6 +8,8 @@
 package frc.robot;
 
 import frc.robot.drive;
+
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -25,9 +27,10 @@ public class Robot extends TimedRobot {
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
-  private final drive m_drive = new drive();
-
+  private final ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
   private final Joystick m_stick = new Joystick(0);
+  private final drive m_drive = new drive(m_gyro);
+  private final control m_control = new control(m_stick, m_drive);
 
   /**
    * This function is run when the robot is first started up and should be
@@ -91,22 +94,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    double x = m_stick.getX();
-    double y = m_stick.getY();
-    double r = m_stick.getRawAxis(4);
-    m_drive.cartMove(x, y, r);
-
-    if (m_stick.getRawButton(1)) {
-      m_drive.setMode(drive.modeHatch);
-    }
-
-    if (m_stick.getRawButton(2)) {
-      m_drive.setMode(drive.modeCargo);
-    }
-
-    if (m_stick.getRawButton(3)) {
-      m_drive.setMode(drive.modeField);
-    }
+    m_control.teleOp();
   }
 
   /**

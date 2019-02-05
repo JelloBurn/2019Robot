@@ -1,50 +1,72 @@
 package frc.robot;
 
+import java.lang.Math;
+
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
-import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.drive.MecanumDrive;
 
 public class drive {
-    private static final int wheelHL = 1;
-    private static final int wheelHR = 0;
-    private static final int wheelBL = 2;
-    private static final int wheelBR = 3;
-
     private final WPI_TalonSRX talonHL;
     private final WPI_TalonSRX talonHR;
     private final WPI_TalonSRX talonBL;
     private final WPI_TalonSRX talonBR;
     private final MecanumDrive mecanum;
-    private final ADXRS450_Gyro gyro;
 
+    private ADXRS450_Gyro gyro;
     private int driveMode;
+    private double currentX, currentY, currentR;
+
+    private static final int wheelHL = 1;
+    private static final int wheelHR = 0;
+    private static final int wheelBL = 2;
+    private static final int wheelBR = 3;
 
     public static final int modeCargo = 1;
     public static final int modeHatch = -1;
     public static final int modeField = 0;
 
-    public drive() {
+    private static double accelLimitX = 0.1;
+    private static double accelLimitY = 0.1;
+    private static double accelLimitR = 0.1;
+
+    public drive(ADXRS450_Gyro source) {
         talonHL = new WPI_TalonSRX(wheelHL);
         talonHR = new WPI_TalonSRX(wheelHR);
         talonBL = new WPI_TalonSRX(wheelBL);
         talonBR = new WPI_TalonSRX(wheelBR);
         mecanum = new MecanumDrive(talonHL, talonBR, talonHR, talonBL);
-        gyro = new ADXRS450_Gyro();
+        gyro = source;
         driveMode = modeHatch;
+    }
+
+    private double xferLimitAccel(double current, double desired, double limit, Boolean debug) {
+        double delta = desired - current;
+        if (Math.abs(delta) < limit) {
+            return current + delta;
+        } else {
+            if (delta < 0) {
+                return current - limit;
+            } else {
+                return current + limit;
+            }
+        }
     }
 
     public void cartMove(double forward, double right, double cw) {
         if (driveMode != 0) {
-            mecanum.driveCartesian(driveMode * forward,
-                                   driveMode * right,
-                                   cw,
-                                   0.0);
+            currentX = xferLimitAccel(currentX, driveMode * forward, accelLimitX, true);
+            currentY = xferLimitAccel(currentY, driveMode * right, accelLimitY, false);
+            currentR = xferLimitAccel(currentR, cw, accelLimitR, false);
+            mecanum.driveCartesian(currentX, currentY, currentR, 0.0);
         } else {
-            mecanum.driveCartesian(forward,
-                                   right,
-                                   cw,
-                                   gyro.getAngle());
+            // curX == currentX * cos(gyro)?
+            // curY == currentY * sin(gyro)?
+            currentX = xferLimitAccel(currentX, forward, accelLimitX, true);
+            currentY = xferLimitAccel(currentY, right, accelLimitY, false);
+            currentR = xferLimitAccel(currentR, cw, accelLimitR, false);
+            mecanum.driveCartesian(currentX, currentY, currentR, gyro.getAngle());
         }
     }
 
