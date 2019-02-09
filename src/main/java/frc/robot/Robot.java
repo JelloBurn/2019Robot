@@ -7,8 +7,9 @@
 
 package frc.robot;
 
-import frc.robot.drive;
-
+import frc.robot.Drive;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -29,8 +30,11 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
   private final ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
   private final Joystick m_stick = new Joystick(0);
-  private final drive m_drive = new drive(m_gyro);
-  private final control m_control = new control(m_stick, m_drive);
+  private final Drive m_drive = new Drive(m_gyro);
+  private final Hatch m_hatch = new Hatch();
+  private final UsbCamera m_cameraCargo = CameraServer.getInstance().startAutomaticCapture(0);
+  private final UsbCamera m_cameraHatch = CameraServer.getInstance().startAutomaticCapture(1);
+  private final Control m_control = new Control(m_stick, m_drive, m_cameraHatch, m_cameraCargo, m_hatch);
 
   /**
    * This function is run when the robot is first started up and should be
@@ -38,6 +42,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    System.out.println("Starting robotInit() method.");
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
@@ -55,6 +60,15 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
   }
 
+  @Override
+  public void disabledInit() {
+    System.out.println("Starting disabledInit() method.");
+  }
+
+  @Override
+  public void disabledPeriodic() {
+  }
+
   /**
    * This autonomous (along with the chooser code above) shows how to select
    * between different autonomous modes using the dashboard. The sendable
@@ -68,6 +82,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    System.out.println("Starting autonomousInit() method.");
     m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
@@ -89,12 +104,22 @@ public class Robot extends TimedRobot {
     }
   }
 
+  @Override
+  public void teleopInit() {
+    System.out.println("Starting teleopInit() method.");
+  }
+
   /**
    * This function is called periodically during operator control.
    */
   @Override
   public void teleopPeriodic() {
     m_control.teleOp();
+  }
+
+  @Override
+  public void testInit() {
+    System.out.println("Starting testInit() method.");
   }
 
   /**

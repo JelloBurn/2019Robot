@@ -7,7 +7,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 
-public class drive {
+public class Drive {
     private final WPI_TalonSRX talonHL;
     private final WPI_TalonSRX talonHR;
     private final WPI_TalonSRX talonBL;
@@ -31,7 +31,7 @@ public class drive {
     private static double accelLimitY = 0.1;
     private static double accelLimitR = 0.1;
 
-    public drive(ADXRS450_Gyro source) {
+    public Drive(ADXRS450_Gyro source) {
         talonHL = new WPI_TalonSRX(wheelHL);
         talonHR = new WPI_TalonSRX(wheelHR);
         talonBL = new WPI_TalonSRX(wheelBL);

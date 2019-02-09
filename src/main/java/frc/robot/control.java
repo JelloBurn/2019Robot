@@ -2,15 +2,23 @@ package frc.robot;
 
 import java.lang.Math;
 
-import frc.robot.drive;
+import frc.robot.Drive;
+import frc.robot.Hatch;
 
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.VideoSink;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Joystick;
 
-public class control {
+public class Control {
     private Joystick stick;
-    private drive wheels;
+    private Drive wheels;
+    private Hatch panel;
 
-    Boolean prevCatchRelease;
+    private Boolean prevCatchRelease;
+    private UsbCamera camHatch;
+    private UsbCamera camCargo;
+    private VideoSink camServer = CameraServer.getInstance().getServer();
 
     private static final int axisSpin = 4;
     private static final int buttonHatch = 1;
@@ -22,10 +30,15 @@ public class control {
     private static final double deadbandY = 0.075;
     private static final double deadbandR = 0.075;
     
-    public control(Joystick input, drive driveTrain) {
+    public Control(Joystick input, Drive driveTrain, UsbCamera cameraHatch, UsbCamera cameraCargo, Hatch asmHatch) {
         stick = input;
         wheels = driveTrain;
+        camHatch = cameraHatch;
+        camCargo = cameraCargo;
+        panel = asmHatch;
         prevCatchRelease = false;
+        wheels.setMode(Drive.modeHatch);
+        camServer.setSource(camHatch);
     }
 
     private double xferDeadband(double value, double width) {
@@ -42,22 +55,24 @@ public class control {
         wheels.cartMove(x, y, r);
     
         if (stick.getRawButton(buttonHatch)) {
-          wheels.setMode(drive.modeHatch);
+          wheels.setMode(Drive.modeHatch);
+          camServer.setSource(camHatch);
         }
     
         if (stick.getRawButton(buttonCargo)) {
-          wheels.setMode(drive.modeCargo);
+          wheels.setMode(Drive.modeCargo);
+          camServer.setSource(camCargo);
         }
     
         if (stick.getRawButton(buttonField)) {
-          wheels.setMode(drive.modeField);
+          wheels.setMode(Drive.modeField);
         }    
 
         if (stick.getRawButton(buttonCatchRelease)) {
             if (!prevCatchRelease) { // button was just pressed
                 // if hatch is grabbed, release it
                 // otherwise grab it
-                assert false;
+                panel.setMode(Hatch.modeSwitchGrip);
             }
             prevCatchRelease = true;
         } else {
