@@ -26,10 +26,12 @@ public class Drive {
     public static final int modeCargo = 1;
     public static final int modeHatch = -1;
     public static final int modeField = 0;
+    public static final int modeStart = modeHatch;
 
     private static double accelLimitX = 0.1;
     private static double accelLimitY = 0.1;
     private static double accelLimitR = 0.1;
+    private static double decelFactor = 2.0;
 
     public Drive(ADXRS450_Gyro source) {
         talonHL = new WPI_TalonSRX(wheelHL);
@@ -43,15 +45,17 @@ public class Drive {
 
     private double xferLimitAccel(double current, double desired, double limit, Boolean debug) {
         double delta = desired - current;
-        if (Math.abs(delta) < limit) {
-            return current + delta;
-        } else {
+        if (delta * current < 0) {  // braking is faster than accelerating for safety reasons
+            limit *= decelFactor;
+        }
+        if (Math.abs(delta) > limit) {
             if (delta < 0) {
-                return current - limit;
+                delta = -limit;
             } else {
-                return current + limit;
+                delta = limit;
             }
         }
+        return current + delta;
     }
 
     public void cartMove(double forward, double right, double cw) {

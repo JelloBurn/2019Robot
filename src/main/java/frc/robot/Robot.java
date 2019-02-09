@@ -13,8 +13,8 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+//import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+//import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -24,17 +24,17 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * project.
  */
 public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  //private static final String kDefaultAuto = "Default";
+  //private static final String kCustomAuto = "My Auto";
+  //private String m_autoSelected;
+  //private final SendableChooser<String> m_chooser = new SendableChooser<>();
   private final ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
   private final Joystick m_stick = new Joystick(0);
   private final Drive m_drive = new Drive(m_gyro);
   private final Hatch m_hatch = new Hatch();
   private final UsbCamera m_cameraCargo = CameraServer.getInstance().startAutomaticCapture(0);
   private final UsbCamera m_cameraHatch = CameraServer.getInstance().startAutomaticCapture(1);
-  private final Control m_control = new Control(m_stick, m_drive, m_cameraHatch, m_cameraCargo, m_hatch);
+  private final Control m_control = new Control(m_stick, m_cameraHatch, m_cameraCargo);
 
   /**
    * This function is run when the robot is first started up and should be
@@ -43,9 +43,9 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     System.out.println("Starting robotInit() method.");
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
-    SmartDashboard.putData("Auto choices", m_chooser);
+    //m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
+    //m_chooser.addOption("My Auto", kCustomAuto);
+    //SmartDashboard.putData("Auto choices", m_chooser);
   }
 
   /**
@@ -63,6 +63,8 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     System.out.println("Starting disabledInit() method.");
+    m_hatch.setMode(Hatch.modeStart & ~Hatch.modeGrab);
+    m_control.setMode(Control.modeHatchRelease);
   }
 
   @Override
@@ -83,9 +85,9 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     System.out.println("Starting autonomousInit() method.");
-    m_autoSelected = m_chooser.getSelected();
+    //m_autoSelected = m_chooser.getSelected();
     // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-    System.out.println("Auto selected: " + m_autoSelected);
+    //System.out.println("Auto selected: " + m_autoSelected);
   }
 
   /**
@@ -93,20 +95,22 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
-    switch (m_autoSelected) {
-      case kCustomAuto:
+    //switch (m_autoSelected) {
+    //  case kCustomAuto:
         // Put custom auto code here
-        break;
-      case kDefaultAuto:
-      default:
+    //    break;
+    //  case kDefaultAuto:
+    //  default:
         // Put default auto code here
-        break;
-    }
+    //    break;
+    //}
   }
 
   @Override
   public void teleopInit() {
     System.out.println("Starting teleopInit() method.");
+    m_hatch.setMode(Hatch.modeStart | Hatch.modeGrab);
+    m_control.setMode(Control.modeHatchGrab);
   }
 
   /**
@@ -114,6 +118,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    m_drive.setMode(m_control.getDriveMode());
+    m_drive.cartMove(m_control.getDriveX(), m_control.getDriveY(), m_control.getDriveR());
+
+    m_hatch.setMode(m_control.getHatchMode());
+
     m_control.teleOp();
   }
 
