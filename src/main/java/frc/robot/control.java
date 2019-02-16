@@ -5,9 +5,6 @@ import java.lang.Math;
 import frc.robot.Drive;
 import frc.robot.Hatch;
 
-import edu.wpi.cscore.UsbCamera;
-import edu.wpi.cscore.VideoSink;
-import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Joystick;
 
 public class Control {
@@ -16,11 +13,9 @@ public class Control {
     private int modeDrive = Drive.modeStart;
     private int modeHatch = Hatch.modeStart;
     private Boolean prevCatchRelease;
-    private UsbCamera camHatch;
-    private UsbCamera camCargo;
-    private VideoSink camServer = CameraServer.getInstance().getServer();
 
     private static final int axisSpin = 4;
+    private static final int axisSpeed = 2;
     private static final int buttonHatch = 1;
     private static final int buttonCargo = 2;
     private static final int buttonCatchRelease = 4;
@@ -28,23 +23,21 @@ public class Control {
     private static final double deadbandX = 0.075;
     private static final double deadbandY = 0.075;
     private static final double deadbandR = 0.075;
+    private static final double speedMin = 0.5;
     
     public static final int modeHatchGrab = 1;
     public static final int modeHatchRelease = 2;
 
-    public Control(Joystick input, UsbCamera cameraHatch, UsbCamera cameraCargo) {
-        stick = input;
-        camHatch = cameraHatch;
-        camCargo = cameraCargo;
+    public Control() {
         prevCatchRelease = false;
-        camServer.setSource(camHatch);
     }
 
     private double xferDeadband(double value, double width) {
+        double speed = stick.getRawAxis(axisSpeed) * (1.0 - speedMin) + speedMin;
         if (Math.abs(value) < width) {
             return 0.0;
         }
-        return value;
+        return value * speed;
     }
 
     public double getDriveX() {
@@ -81,17 +74,6 @@ public class Control {
             prevCatchRelease = false;
         }
         return modeHatch;
-    }
-
-    public void teleOp() {
-        if (stick.getRawButton(buttonHatch)) {
-          camServer.setSource(camHatch);
-        }
-    
-        if (stick.getRawButton(buttonCargo)) {
-          camServer.setSource(camCargo);
-        }
-    
     }
 
     public void setMode(int mode) {

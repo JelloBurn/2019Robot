@@ -9,12 +9,9 @@ package frc.robot;
 
 import frc.robot.Drive;
 import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.VideoSink;
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
-//import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-//import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -24,17 +21,12 @@ import edu.wpi.first.wpilibj.TimedRobot;
  * project.
  */
 public class Robot extends TimedRobot {
-  //private static final String kDefaultAuto = "Default";
-  //private static final String kCustomAuto = "My Auto";
-  //private String m_autoSelected;
-  //private final SendableChooser<String> m_chooser = new SendableChooser<>();
-  private final ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
-  private final Joystick m_stick = new Joystick(0);
-  private final Drive m_drive = new Drive(m_gyro);
+  private final Control m_control = new Control();
+  private final Drive m_drive = new Drive();
   private final Hatch m_hatch = new Hatch();
   private final UsbCamera m_cameraCargo = CameraServer.getInstance().startAutomaticCapture(0);
   private final UsbCamera m_cameraHatch = CameraServer.getInstance().startAutomaticCapture(1);
-  private final Control m_control = new Control(m_stick, m_cameraHatch, m_cameraCargo);
+  private VideoSink m_cameraServer = CameraServer.getInstance().getServer();
 
   /**
    * This function is run when the robot is first started up and should be
@@ -43,9 +35,6 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     System.out.println("Starting robotInit() method.");
-    //m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    //m_chooser.addOption("My Auto", kCustomAuto);
-    //SmartDashboard.putData("Auto choices", m_chooser);
   }
 
   /**
@@ -63,8 +52,6 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     System.out.println("Starting disabledInit() method.");
-    m_hatch.setMode(Hatch.modeStart & ~Hatch.modeGrab);
-    m_control.setMode(Control.modeHatchRelease);
   }
 
   @Override
@@ -95,15 +82,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
-    //switch (m_autoSelected) {
-    //  case kCustomAuto:
-        // Put custom auto code here
-    //    break;
-    //  case kDefaultAuto:
-    //  default:
-        // Put default auto code here
-    //    break;
-    //}
   }
 
   @Override
@@ -111,6 +89,7 @@ public class Robot extends TimedRobot {
     System.out.println("Starting teleopInit() method.");
     m_hatch.setMode(Hatch.modeStart | Hatch.modeGrab);
     m_control.setMode(Control.modeHatchGrab);
+    m_cameraServer.setSource(m_cameraHatch);
   }
 
   /**
@@ -120,15 +99,21 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     m_drive.setMode(m_control.getDriveMode());
     m_drive.cartMove(m_control.getDriveX(), m_control.getDriveY(), m_control.getDriveR());
+    if (m_control.getDriveMode() == Drive.modeHatch) {
+      m_cameraServer.setSource(m_cameraHatch);
+    }
+    if (m_control.getDriveMode() == Drive.modeCargo) {
+      m_cameraServer.setSource(m_cameraCargo);
+    }
 
     m_hatch.setMode(m_control.getHatchMode());
-
-    m_control.teleOp();
   }
 
   @Override
   public void testInit() {
     System.out.println("Starting testInit() method.");
+    m_hatch.setMode(Hatch.modeStart & ~Hatch.modeGrab & ~Hatch.modeExtend);
+    m_control.setMode(Control.modeHatchRelease);
   }
 
   /**

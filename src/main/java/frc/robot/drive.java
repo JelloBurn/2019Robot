@@ -33,17 +33,17 @@ public class Drive {
     private static double accelLimitR = 0.1;
     private static double decelFactor = 2.0;
 
-    public Drive(ADXRS450_Gyro source) {
+    public Drive() {
         talonHL = new WPI_TalonSRX(wheelHL);
         talonHR = new WPI_TalonSRX(wheelHR);
         talonBL = new WPI_TalonSRX(wheelBL);
         talonBR = new WPI_TalonSRX(wheelBR);
         mecanum = new MecanumDrive(talonHL, talonBR, talonHR, talonBL);
-        gyro = source;
+        gyro = new ADXRS450_Gyro();
         driveMode = modeHatch;
     }
 
-    private double xferLimitAccel(double current, double desired, double limit, Boolean debug) {
+    private double xferLimitAccel(double current, double desired, double limit) {
         double delta = desired - current;
         if (delta * current < 0) {  // braking is faster than accelerating for safety reasons
             limit *= decelFactor;
@@ -60,16 +60,16 @@ public class Drive {
 
     public void cartMove(double forward, double right, double cw) {
         if (driveMode != 0) {
-            currentX = xferLimitAccel(currentX, driveMode * forward, accelLimitX, true);
-            currentY = xferLimitAccel(currentY, driveMode * right, accelLimitY, false);
-            currentR = xferLimitAccel(currentR, cw, accelLimitR, false);
+            currentX = xferLimitAccel(currentX, driveMode * forward, accelLimitX);
+            currentY = xferLimitAccel(currentY, driveMode * right, accelLimitY);
+            currentR = xferLimitAccel(currentR, cw, accelLimitR);
             mecanum.driveCartesian(currentX, currentY, currentR, 0.0);
         } else {
             // curX == currentX * cos(gyro)?
             // curY == currentY * sin(gyro)?
-            currentX = xferLimitAccel(currentX, forward, accelLimitX, true);
-            currentY = xferLimitAccel(currentY, right, accelLimitY, false);
-            currentR = xferLimitAccel(currentR, cw, accelLimitR, false);
+            currentX = xferLimitAccel(currentX, forward, accelLimitX);
+            currentY = xferLimitAccel(currentY, right, accelLimitY);
+            currentR = xferLimitAccel(currentR, cw, accelLimitR);
             mecanum.driveCartesian(currentX, currentY, currentR, gyro.getAngle());
         }
     }
