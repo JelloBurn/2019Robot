@@ -10,8 +10,8 @@ import edu.wpi.first.wpilibj.Joystick;
 public class Control {
     private Joystick stick = new Joystick(0);
 
-    private int modeDrive = Drive.modeStart;
-    private int modeHatch = Hatch.modeStart;
+    private int modeDrive = Drive.modeInit;
+    private int modeHatch = Hatch.modeUnknown;
     private Boolean prevCatchRelease;
 
     private static final int axisSpin = 4;
@@ -19,6 +19,7 @@ public class Control {
     private static final int buttonHatch = 1;
     private static final int buttonCargo = 2;
     private static final int buttonCatchRelease = 4;
+    private static final int buttonStart = 8;
 
     private static final double deadbandX = 0.075;
     private static final double deadbandY = 0.075;
@@ -62,12 +63,20 @@ public class Control {
         return modeDrive;
     }
 
+    public Boolean getStart() {
+        return stick.getRawButton(buttonStart);
+    }
+
     public int getHatchMode () {
         if (stick.getRawButton(buttonCatchRelease)) {
             if (!prevCatchRelease) { // button was just pressed
                 // if hatch is grabbed, release it
                 // otherwise grab it
-                modeHatch ^= Hatch.modeGrab;
+                if (modeHatch == Hatch.modeGrab) {
+                    modeHatch = Hatch.modeRelease;
+                } else{
+                    modeHatch = Hatch.modeGrab;
+                }
             }
             prevCatchRelease = true;
         } else {
@@ -78,8 +87,8 @@ public class Control {
 
     public void setMode(int mode) {
         switch (mode) {
-            case modeHatchGrab:     modeHatch |= ~Hatch.modeGrab; break;
-            case modeHatchRelease:  modeHatch &= ~Hatch.modeGrab; break;
+            case modeHatchGrab:     modeHatch = Hatch.modeGrab; break;
+            case modeHatchRelease:  modeHatch = Hatch.modeRelease; break;
             default: System.out.println("Error: Setting unknown control mode"); break;
         }
     }    
