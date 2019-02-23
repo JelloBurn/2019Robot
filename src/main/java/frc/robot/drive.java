@@ -18,14 +18,14 @@ public class Drive {
     private int driveMode;
     private double currentX, currentY, currentR;
 
-/*    // practice bot
+    // practice bot
     private static final int wheelHL = 1;
     private static final int wheelHR = 0;
     private static final int wheelBL = 2;
     private static final int wheelBR = 3;
     public static final int modeCargo = 1;
     public static final int modeHatch = -1;
-*/
+/*
     // competition bot
     private static final int wheelHL = 0;
     private static final int wheelHR = 3;
@@ -36,7 +36,7 @@ public class Drive {
     // balance parameters
     // hatch / cargo = 2.9403
     // compressor / power = 1.0833
-
+*/
     public static final int modeField = 0;
     public static final int modeInit = modeHatch;
 

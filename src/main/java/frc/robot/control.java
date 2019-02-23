@@ -19,7 +19,6 @@ public class Control {
     private static final int buttonHatch = 1;
     private static final int buttonCargo = 2;
     private static final int buttonCatchRelease = 4;
-    private static final int buttonStart = 8;
 
     private static final double deadbandX = 0.075;
     private static final double deadbandY = 0.075;
@@ -61,10 +60,6 @@ public class Control {
             if (stick.getRawButton(buttonCargo)) { modeDrive = Drive.modeCargo; }
         }
         return modeDrive;
-    }
-
-    public Boolean getStart() {
-        return stick.getRawButton(buttonStart);
     }
 
     public int getHatchMode () {

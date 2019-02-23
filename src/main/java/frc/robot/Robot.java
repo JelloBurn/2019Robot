@@ -29,7 +29,7 @@ public class Robot extends TimedRobot {
   private VideoSink m_cameraServer = CameraServer.getInstance().getServer();
   private int m_timer = 0;
 
-  private final static int timeExtend = 100;
+  private final static int timeExtend = 200;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -38,7 +38,6 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     System.out.println("Starting robotInit() method.");
-//    m_hatch.setMode(Hatch.modeInit);
     m_control.setMode(Control.modeHatchRelease);
   }
 
@@ -125,18 +124,14 @@ public class Robot extends TimedRobot {
   @Override
   public void testInit() {
     System.out.println("Starting testInit() method.");
-    m_hatch.setGrab(Hatch.modeRelaxed);
-    m_hatch.setExtend(Hatch.modeRelaxed);
-  }
+    m_hatch.setExtend(Hatch.modeRetract);
+    m_hatch.setGrab(Hatch.modeRelease);
+}
 
   /**
    * This function is called periodically during test mode.
    */
   @Override
   public void testPeriodic() {
-    if (m_control.getStart()) {
-      m_hatch.setExtend(Hatch.modeRetract);
-      m_hatch.setGrab(Hatch.modeRelease);
-    }
   }
 }
