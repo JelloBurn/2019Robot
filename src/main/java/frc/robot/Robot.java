@@ -113,6 +113,7 @@ public class Robot extends TimedRobot {
       System.out.print("extend hatch at time ");
       System.out.println(m_timer);
       m_hatch.setMode(Hatch.modeExtend, true);
+      m_control.setMode(Control.modeExtend, true);
     }
 
     m_drive.setMode(m_control.getDrive());
