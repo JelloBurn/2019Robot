@@ -22,8 +22,9 @@ import edu.wpi.first.wpilibj.TimedRobot;
  */
 public class Robot extends TimedRobot {
   private final Control m_control = new Control();
-  private final Drive m_drive = new Drive();
-  private final Hatch m_hatch = new Hatch();
+  private final Drive m_drive = new Drive(Drive.configPractice, Drive.modeHatch);
+  private final Hatch m_hatch = new Hatch(Hatch.configPractice);
+//  private final Cargo m_cargo = new Cargo();
   private final UsbCamera m_cameraCargo = CameraServer.getInstance().startAutomaticCapture(0);
   private final UsbCamera m_cameraHatch = CameraServer.getInstance().startAutomaticCapture(1);
   private VideoSink m_cameraServer = CameraServer.getInstance().getServer();
@@ -38,7 +39,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     System.out.println("Starting robotInit() method.");
-    m_control.setMode(Control.modeHatchRelease);
+    m_control.setMode(Control.modeGrab, false);
   }
 
   /**
@@ -91,8 +92,11 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     System.out.println("Starting teleopInit() method.");
-    m_hatch.setGrab(Hatch.modeGrab);
-    m_control.setMode(Control.modeHatchGrab);
+    m_hatch.setMode(Hatch.modeGrab, true);
+    m_hatch.setMode(Hatch.modeExtend, false);
+    m_drive.setMode(Drive.modeHatch);
+    m_control.setMode(Control.modeGrab, true);
+    m_control.setMode(Control.modeHatch, true);
     m_cameraServer.setSource(m_cameraHatch);
     m_timer = 0;
   }
@@ -102,30 +106,32 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    m_control.periodic();
+
     m_timer += 1;
     if (m_timer == timeExtend) {
       System.out.print("extend hatch at time ");
       System.out.println(m_timer);
-      m_hatch.setExtend(Hatch.modeExtend);
+      m_hatch.setMode(Hatch.modeExtend, true);
     }
 
-    m_drive.setMode(m_control.getDriveMode());
+    m_drive.setMode(m_control.getDrive());
     m_drive.cartMove(m_control.getDriveX(), m_control.getDriveY(), m_control.getDriveR());
-    if (m_control.getDriveMode() == Drive.modeHatch) {
+    if (m_control.getDrive() == Drive.modeHatch) {
       m_cameraServer.setSource(m_cameraHatch);
     }
-    if (m_control.getDriveMode() == Drive.modeCargo) {
+    if (m_control.getDrive() == Drive.modeCargo) {
       m_cameraServer.setSource(m_cameraCargo);
     }
 
-    m_hatch.setGrab(m_control.getHatchMode());
+    m_hatch.setMode(Hatch.modeGrab, m_control.getHatchGrab());
   }
 
   @Override
   public void testInit() {
     System.out.println("Starting testInit() method.");
-    m_hatch.setExtend(Hatch.modeRetract);
-    m_hatch.setGrab(Hatch.modeRelease);
+    m_hatch.setMode(Hatch.modeExtend, false);
+    m_hatch.setMode(Hatch.modeGrab, false);
 }
 
   /**
@@ -133,5 +139,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void testPeriodic() {
+    m_control.periodic();
   }
 }

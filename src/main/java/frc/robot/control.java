@@ -3,33 +3,39 @@ package frc.robot;
 import java.lang.Math;
 
 import frc.robot.Drive;
-import frc.robot.Hatch;
 
 import edu.wpi.first.wpilibj.Joystick;
 
 public class Control {
     private Joystick stick = new Joystick(0);
 
-    private int modeDrive = Drive.modeInit;
-    private int modeHatch = Hatch.modeUnknown;
-    private Boolean prevCatchRelease;
+    private int state = 0;
+    private Boolean prevGrab;
+    private Boolean prevExtend;
+    private Boolean prevHatch;
 
     private static final int axisSpin = 4;
-    private static final int axisSpeed = 2;
-    private static final int buttonHatch = 1;
-    private static final int buttonCargo = 2;
-    private static final int buttonCatchRelease = 4;
+    private static final int axisSpeed = 3;
+    private static final int axisRaise = 2; // raise cargo handler
+    private static final int buttonDriveMode = 4;  //cargo/hatch drive mode
+    private static final int buttonGrabRelease = 1;
+    private static final int buttonExtend = 8; // extend/retract hatch handler 
+    private static final int buttonCatch = 1; // catch cargo
+    private static final int buttonThrow = 2; // throw cargo
+    private static final int buttonLower = 5; // lower cargo handler
 
     private static final double deadbandX = 0.075;
     private static final double deadbandY = 0.075;
     private static final double deadbandR = 0.075;
     private static final double speedMin = 0.5;
     
-    public static final int modeHatchGrab = 1;
-    public static final int modeHatchRelease = 2;
+    public static final int modeHatch = 1;
+    public static final int modeGrab = 2;
+    public static final int modeExtend = 4;
 
     public Control() {
-        prevCatchRelease = false;
+        prevGrab = false;
+        prevHatch = false;
     }
 
     private double xferDeadband(double value, double width) {
@@ -52,39 +58,66 @@ public class Control {
         return xferDeadband(stick.getRawAxis(axisSpin), deadbandR);
     }
 
-    public int getDriveMode() {
-        if (stick.getRawButton(buttonHatch) && stick.getRawButton(buttonCargo)) {
-            modeDrive = Drive.modeField;
+    public int getDrive() {
+        if ((state & modeHatch) == modeHatch) {
+            return Drive.modeHatch;
         } else {
-            if (stick.getRawButton(buttonHatch)) { modeDrive = Drive.modeHatch; }
-            if (stick.getRawButton(buttonCargo)) { modeDrive = Drive.modeCargo; }
+            return Drive.modeCargo;
         }
-        return modeDrive;
     }
 
-    public int getHatchMode () {
-        if (stick.getRawButton(buttonCatchRelease)) {
-            if (!prevCatchRelease) { // button was just pressed
-                // if hatch is grabbed, release it
-                // otherwise grab it
-                if (modeHatch == Hatch.modeGrab) {
-                    modeHatch = Hatch.modeRelease;
-                } else{
-                    modeHatch = Hatch.modeGrab;
+    public Boolean getHatchGrab () {
+        return (state & modeGrab) == modeGrab;
+    }
+
+    public void setMode(int key, Boolean value) {
+        switch (key) {
+            case modeHatch:
+                if (value) {
+                    state |= modeHatch;
+                } else {
+                    state &= ~modeHatch;
                 }
-            }
-            prevCatchRelease = true;
-        } else {
-            prevCatchRelease = false;
+                break;
+            case modeGrab:
+                if (value) {
+                    state |= modeGrab;
+                } else {
+                    state &= ~modeGrab;
+                }
+                break;
+            case modeExtend:
+                if (value) {
+                    state |= modeExtend;
+                } else {
+                    state &= ~modeExtend;
+                }
+                break;
+            default:
+                System.out.println("Error: bad Control mode requested");
+                break;
         }
-        return modeHatch;
     }
 
-    public void setMode(int mode) {
-        switch (mode) {
-            case modeHatchGrab:     modeHatch = Hatch.modeGrab; break;
-            case modeHatchRelease:  modeHatch = Hatch.modeRelease; break;
-            default: System.out.println("Error: Setting unknown control mode"); break;
+    private Boolean handleButton(int mode, int button, Boolean previous) {
+        Boolean current = stick.getRawButton(button);
+        if (current & !previous) {
+            state ^= mode;
+
+            System.out.print("Button ");
+            System.out.print(button);
+            if ((state & mode) == mode) {
+                System.out.println(" pressed, state now true");
+            } else {
+                System.out.println(" pressed, state now false");
+            }
         }
-    }    
+        return current;
+    }
+
+    public void periodic() {
+        prevHatch = handleButton(modeHatch, buttonDriveMode, prevHatch);
+        prevGrab = handleButton(modeGrab, buttonGrabRelease, prevGrab);
+        prevExtend = handleButton(modeExtend, buttonExtend, prevExtend);
+    }
 }
