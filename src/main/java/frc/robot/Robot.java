@@ -24,7 +24,7 @@ public class Robot extends TimedRobot {
   private final Control m_control = new Control();
   private final Drive m_drive = new Drive(Drive.configPractice, Drive.modeHatch);
   private final Hatch m_hatch = new Hatch(Hatch.configPractice);
-//  private final Cargo m_cargo = new Cargo();
+  private final Cargo m_cargo = new Cargo();
   private final UsbCamera m_cameraCargo = CameraServer.getInstance().startAutomaticCapture(0);
   private final UsbCamera m_cameraHatch = CameraServer.getInstance().startAutomaticCapture(1);
   private VideoSink m_cameraServer = CameraServer.getInstance().getServer();
@@ -107,6 +107,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     m_control.periodic();
+    m_cargo.periodic();
 
     m_timer += 1;
     if (m_timer == timeExtend) {
@@ -133,6 +134,7 @@ public class Robot extends TimedRobot {
     System.out.println("Starting testInit() method.");
     m_hatch.setMode(Hatch.modeExtend, false);
     m_hatch.setMode(Hatch.modeGrab, false);
+//    m_cargo.retract();
 }
 
   /**
