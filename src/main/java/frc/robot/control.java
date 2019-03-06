@@ -16,13 +16,13 @@ public class Control {
 
     private static final int axisSpin = 4;
     private static final int axisSpeed = 3;
-    private static final int axisRaise = 2; // raise cargo handler
+//    private static final int axisRaise = 2; // raise cargo handler
     private static final int buttonDriveMode = 4;  //cargo/hatch drive mode
-    private static final int buttonGrabRelease = 1;
+    private static final int buttonGrabRelease = 1; // grab/release hatch cover
     private static final int buttonExtend = 8; // extend/retract hatch handler 
-    private static final int buttonCatch = 1; // catch cargo
-    private static final int buttonThrow = 2; // throw cargo
-    private static final int buttonLower = 5; // lower cargo handler
+//    private static final int buttonCatch = 1; // catch cargo
+//    private static final int buttonThrow = 2; // throw cargo
+//    private static final int buttonLower = 5; // lower cargo handler
 
     private static final double deadbandX = 0.075;
     private static final double deadbandY = 0.075;
@@ -36,6 +36,7 @@ public class Control {
     public Control() {
         prevGrab = false;
         prevHatch = false;
+        prevExtend = false;
     }
 
     private double xferDeadband(double value, double width) {
@@ -99,25 +100,28 @@ public class Control {
         }
     }
 
-    private Boolean handleButton(int mode, int button, Boolean previous) {
+    private Boolean handleButton(int mode, int button, Boolean previous, String nameTrue, String nameFalse) {
         Boolean current = stick.getRawButton(button);
         if (current & !previous) {
             state ^= mode;
 
             System.out.print("Button ");
             System.out.print(button);
+            System.out.print(" pressed, state now ");
             if ((state & mode) == mode) {
-                System.out.println(" pressed, state now true");
+                System.out.println(nameTrue);
             } else {
-                System.out.println(" pressed, state now false");
+                System.out.println(nameFalse);
             }
         }
         return current;
     }
 
     public void periodic() {
-        prevHatch = handleButton(modeHatch, buttonDriveMode, prevHatch);
-        prevGrab = handleButton(modeGrab, buttonGrabRelease, prevGrab);
-        prevExtend = handleButton(modeExtend, buttonExtend, prevExtend);
+        prevHatch = handleButton(modeHatch, buttonDriveMode, prevHatch, "hatchDriving", "cargoDriving");
+        if ((state & modeHatch) == modeHatch) {
+            prevGrab = handleButton(modeGrab, buttonGrabRelease, prevGrab, "hatchGrabbed", "hatchReleased");
+            prevExtend = handleButton(modeExtend, buttonExtend, prevExtend, "hatchExtended", "hatchRetracted");
+        }
     }
 }
