@@ -22,15 +22,15 @@ import edu.wpi.first.wpilibj.TimedRobot;
  */
 public class Robot extends TimedRobot {
   private final Control m_control = new Control();
-  private final Drive m_drive = new Drive(Drive.configPractice, Drive.modeHatch);
-  private final Hatch m_hatch = new Hatch(Hatch.configPractice);
+  private final Drive m_drive = new Drive(Drive.configCompetition, Drive.modeHatch);
+  private final Hatch m_hatch = new Hatch(Hatch.configCompetition);
   private final Cargo m_cargo = new Cargo();
   private final UsbCamera m_cameraCargo = CameraServer.getInstance().startAutomaticCapture(0);
   private final UsbCamera m_cameraHatch = CameraServer.getInstance().startAutomaticCapture(1);
   private VideoSink m_cameraServer = CameraServer.getInstance().getServer();
   private int m_timer = 0;
 
-  private final static int timeExtend = 200;
+  private final static int timeExtend = 400;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -94,9 +94,10 @@ public class Robot extends TimedRobot {
     System.out.println("Starting teleopInit() method.");
     m_hatch.setMode(Hatch.modeGrab, true);
     m_hatch.setMode(Hatch.modeExtend, false);
-    m_drive.setMode(Drive.modeHatch);
+    m_cargo.setMode(Cargo.modeHold, true);
     m_control.setMode(Control.modeGrab, true);
     m_control.setMode(Control.modeHatch, true);
+    m_drive.setMode(Drive.modeHatch);
     m_cameraServer.setSource(m_cameraHatch);
     m_timer = 0;
   }
@@ -117,16 +118,17 @@ public class Robot extends TimedRobot {
       m_control.setMode(Control.modeExtend, true);
     }
 
-    m_drive.setMode(m_control.getDrive());
-    m_drive.cartMove(m_control.getDriveX(), m_control.getDriveY(), m_control.getDriveR());
-    if (m_control.getDrive() == Drive.modeHatch) {
+    if (m_control.getMode(Control.modeHatch)) {
+      m_drive.setMode(Drive.modeHatch);
       m_cameraServer.setSource(m_cameraHatch);
-    }
-    if (m_control.getDrive() == Drive.modeCargo) {
+    } else {
+      m_drive.setMode(Drive.modeCargo);
       m_cameraServer.setSource(m_cameraCargo);
     }
+    m_drive.cartMove(m_control.getDriveX(), m_control.getDriveY(), m_control.getDriveR());
 
-    m_hatch.setMode(Hatch.modeGrab, m_control.getHatchGrab());
+    m_hatch.setMode(Hatch.modeGrab, m_control.getMode(Control.modeGrab));
+    m_hatch.setMode(Hatch.modeExtend, m_control.getMode(Control.modeExtend));
   }
 
   @Override
@@ -134,6 +136,7 @@ public class Robot extends TimedRobot {
     System.out.println("Starting testInit() method.");
     m_hatch.setMode(Hatch.modeExtend, false);
     m_hatch.setMode(Hatch.modeGrab, false);
+    m_cargo.setMode(Cargo.modeHold, true);
 //    m_cargo.retract();
 }
 

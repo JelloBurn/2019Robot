@@ -2,8 +2,6 @@ package frc.robot;
 
 import java.lang.Math;
 
-import frc.robot.Drive;
-
 import edu.wpi.first.wpilibj.Joystick;
 
 public class Control {
@@ -17,8 +15,8 @@ public class Control {
     private static final int axisSpin = 4;
     private static final int axisSpeed = 3;
 //    private static final int axisRaise = 2; // raise cargo handler
-    private static final int buttonDriveMode = 4;  //cargo/hatch drive mode
-    private static final int buttonGrabRelease = 1; // grab/release hatch cover
+    private static final int buttonDrive = 4;  //cargo/hatch drive mode
+    private static final int buttonGrab = 1; // grab/release hatch cover
     private static final int buttonExtend = 8; // extend/retract hatch handler 
 //    private static final int buttonCatch = 1; // catch cargo
 //    private static final int buttonThrow = 2; // throw cargo
@@ -59,16 +57,19 @@ public class Control {
         return xferDeadband(stick.getRawAxis(axisSpin), deadbandR);
     }
 
-    public int getDrive() {
-        if ((state & modeHatch) == modeHatch) {
-            return Drive.modeHatch;
-        } else {
-            return Drive.modeCargo;
+    
+    public Boolean getMode(int key) {
+        switch (key) {
+            case modeHatch:
+                return (state & modeHatch) == modeHatch;
+            case modeGrab:
+                return (state & modeGrab) == modeGrab;
+            case modeExtend:
+                return (state & modeExtend) == modeExtend;
+            default:
+                System.out.println("ERROR: get bad Control mode");
+                return false;
         }
-    }
-
-    public Boolean getHatchGrab () {
-        return (state & modeGrab) == modeGrab;
     }
 
     public void setMode(int key, Boolean value) {
@@ -95,7 +96,7 @@ public class Control {
                 }
                 break;
             default:
-                System.out.println("Error: bad Control mode requested");
+                System.out.println("Error: set bad Control mode");
                 break;
         }
     }
@@ -118,9 +119,9 @@ public class Control {
     }
 
     public void periodic() {
-        prevHatch = handleButton(modeHatch, buttonDriveMode, prevHatch, "hatchDriving", "cargoDriving");
+        prevHatch = handleButton(modeHatch, buttonDrive, prevHatch, "hatchDriving", "cargoDriving");
         if ((state & modeHatch) == modeHatch) {
-            prevGrab = handleButton(modeGrab, buttonGrabRelease, prevGrab, "hatchGrabbed", "hatchReleased");
+            prevGrab = handleButton(modeGrab, buttonGrab, prevGrab, "hatchGrabbed", "hatchReleased");
             prevExtend = handleButton(modeExtend, buttonExtend, prevExtend, "hatchExtended", "hatchRetracted");
         }
     }
