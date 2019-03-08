@@ -77,21 +77,6 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     System.out.println("Starting autonomousInit() method.");
-    //m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-    //System.out.println("Auto selected: " + m_autoSelected);
-  }
-
-  /**
-   * This function is called periodically during autonomous.
-   */
-  @Override
-  public void autonomousPeriodic() {
-  }
-
-  @Override
-  public void teleopInit() {
-    System.out.println("Starting teleopInit() method.");
     m_hatch.setMode(Hatch.modeGrab, true);
     m_hatch.setMode(Hatch.modeExtend, false);
     m_cargo.setMode(Cargo.modeHold, true);
@@ -100,6 +85,19 @@ public class Robot extends TimedRobot {
     m_drive.setMode(Drive.modeHatch);
     m_cameraServer.setSource(m_cameraHatch);
     m_timer = 0;
+  }
+
+  /**
+   * This function is called periodically during autonomous.
+   */
+  @Override
+  public void autonomousPeriodic() {
+    teleopPeriodic();
+  }
+
+  @Override
+  public void teleopInit() {
+    System.out.println("Starting teleopInit() method.");
   }
 
   /**
@@ -125,7 +123,7 @@ public class Robot extends TimedRobot {
       m_drive.setMode(Drive.modeCargo);
       m_cameraServer.setSource(m_cameraCargo);
     }
-    m_drive.cartMove(m_control.getDriveX(), m_control.getDriveY(), m_control.getDriveR());
+    m_drive.move(m_control.getDriveX(), m_control.getDriveY(), m_control.getDriveR());
 
     m_hatch.setMode(Hatch.modeGrab, m_control.getMode(Control.modeGrab));
     m_hatch.setMode(Hatch.modeExtend, m_control.getMode(Control.modeExtend));
@@ -137,7 +135,7 @@ public class Robot extends TimedRobot {
     m_hatch.setMode(Hatch.modeExtend, false);
     m_hatch.setMode(Hatch.modeGrab, false);
     m_cargo.setMode(Cargo.modeHold, true);
-//    m_cargo.retract();
+    //m_cargo.setMode(Cargo.modeRetract, true);
 }
 
   /**
@@ -146,5 +144,6 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
     m_control.periodic();
+    m_cargo.periodic();
   }
 }

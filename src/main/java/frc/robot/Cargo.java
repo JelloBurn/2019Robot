@@ -15,19 +15,19 @@ public class Cargo {
 
     private static final double lowerPower = -0.25;
     private static final double raisePower = 0.25;
-    private static final double recvPower = 0.5;
+    private static final double recvPower = 0.1;
     private static final int recvTime = 5;
     private static final double restCargoPower = 0.0;
     private static final double restHandlePower = 0.0;
-    private static final double sendPower = -1.0;
+    private static final double sendPower = -0.3;
     private static final int sendTime = 10;
 
     public static final int modeHold = 1;
 
     public Cargo() {
-        cargoLeft = new WPI_TalonSRX(4);
-        cargoRight = new WPI_TalonSRX(5);
-        cargoHandler = new WPI_VictorSPX(6);
+        cargoLeft = new WPI_TalonSRX(5);
+        cargoRight = new WPI_TalonSRX(6);
+        cargoHandler = new WPI_VictorSPX(1);
         cargoHold = new Solenoid(2);
         cargoDrop = new Solenoid(5);
         timer = 0;
@@ -55,17 +55,6 @@ public class Cargo {
         }
     }
 
-    public void recv() {
-        if (timer == 0) {
-            cargoLeft.set(recvPower);
-            cargoRight.set(recvPower);
-            timer = recvTime;
-            System.out.println("receiving cargo");
-        } else {
-            System.out.println("WARNING: ignoring cargoRecv request");
-        }
-    }
-
     public void send() {
         if (timer == 0) {
             cargoLeft.set(sendPower);
@@ -83,13 +72,15 @@ public class Cargo {
                            cargoDrop.set(!value);
                            if (timer == 0 && value == true) {
                                 cargoLeft.set(recvPower);
-                                cargoRight.set(recvPower);
+                                cargoRight.set(-recvPower);
                                 timer = recvTime;
                                 System.out.println("receiving cargo");
                             } else {
                                 System.out.println("WARNING: ignoring cargoRecv request");
                             }
                             break;
+            //case modeRaise: cargoHandler.set(0.2);
+            //case modeLower: ;
             default: System.out.println("ERROR: bad cargo mode requested");
                      break;
         }

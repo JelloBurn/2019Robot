@@ -15,8 +15,8 @@ public class Control {
     private static final int axisSpin = 4;
     private static final int axisSpeed = 3;
 //    private static final int axisRaise = 2; // raise cargo handler
-    private static final int buttonDrive = 4;  //cargo/hatch drive mode
-    private static final int buttonGrab = 1; // grab/release hatch cover
+    private static final int buttonDrive = 1;  //cargo/hatch drive mode
+    private static final int buttonGrab = 4; // grab/release hatch cover
     private static final int buttonExtend = 8; // extend/retract hatch handler 
 //    private static final int buttonCatch = 1; // catch cargo
 //    private static final int buttonThrow = 2; // throw cargo
@@ -121,8 +121,11 @@ public class Control {
     public void periodic() {
         prevHatch = handleButton(modeHatch, buttonDrive, prevHatch, "hatchDriving", "cargoDriving");
         if ((state & modeHatch) == modeHatch) {
+            // hatch mode controls
             prevGrab = handleButton(modeGrab, buttonGrab, prevGrab, "hatchGrabbed", "hatchReleased");
             prevExtend = handleButton(modeExtend, buttonExtend, prevExtend, "hatchExtended", "hatchRetracted");
+        } else {
+            // cargo mode controls
         }
     }
 }

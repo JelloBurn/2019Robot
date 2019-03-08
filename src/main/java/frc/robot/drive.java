@@ -40,7 +40,7 @@ public class Drive {
                 hatchFactor = -1;
                 break;
             case configCompetition:
-                talonHL = new WPI_TalonSRX(0);
+                talonHL = new WPI_TalonSRX(4);
                 talonHR = new WPI_TalonSRX(3);
                 talonBL = new WPI_TalonSRX(2);
                 talonBR = new WPI_TalonSRX(1);
@@ -70,7 +70,7 @@ public class Drive {
         return current + delta;
     }
 
-    public void cartMove(double forward, double right, double cw) {
+    public void move(double forward, double right, double cw) {
         if (driveMode != unknownFactor) {
             currentX = xferLimitAccel(currentX, driveMode * forward, accelLimitX);
             currentY = xferLimitAccel(currentY, driveMode * right, accelLimitY);
