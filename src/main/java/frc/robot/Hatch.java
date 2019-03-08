@@ -34,19 +34,23 @@ public class Hatch {
         }
     }
 
-    public void setMode(int key, Boolean value) {
-        switch (key) {
-            case modeGrab:
-                solGrab.set(value);
-                solRelease.set(!value);
-                break;
-            case modeExtend:
-                solExtend.set(value);
-                solRetract.set(!value);
-                break;
-            default:
-                System.out.println("ERROR: bad Hatch mode requested");
-                break;
-        }
+    public void cmdGrab() {
+        solGrab.set(true);
+        solRelease.set(false);
+    }
+
+    public void cmdRelease() {
+        solGrab.set(false);
+        solRelease.set(true);
+    }
+
+    public void cmdExtend() {
+        solExtend.set(true);
+        solRetract.set(false);
+    }
+
+    public void cmdRetract() {
+        solExtend.set(false);
+        solRetract.set(true);
     }
 }

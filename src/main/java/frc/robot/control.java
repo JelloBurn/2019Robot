@@ -13,7 +13,7 @@ public class Control {
     private Boolean prevHatch;
 
     private static final int axisSpin = 4;
-    private static final int axisSpeed = 3;
+    private static final int axisSpeed = 2;
 //    private static final int axisRaise = 2; // raise cargo handler
     private static final int buttonDrive = 1;  //cargo/hatch drive mode
     private static final int buttonGrab = 4; // grab/release hatch cover
@@ -57,48 +57,40 @@ public class Control {
         return xferDeadband(stick.getRawAxis(axisSpin), deadbandR);
     }
 
-    
-    public Boolean getMode(int key) {
-        switch (key) {
-            case modeHatch:
-                return (state & modeHatch) == modeHatch;
-            case modeGrab:
-                return (state & modeGrab) == modeGrab;
-            case modeExtend:
-                return (state & modeExtend) == modeExtend;
-            default:
-                System.out.println("ERROR: get bad Control mode");
-                return false;
-        }
+    public Boolean getHatchMode() {
+        return (state & modeHatch) == modeHatch;
     }
 
-    public void setMode(int key, Boolean value) {
-        switch (key) {
-            case modeHatch:
-                if (value) {
-                    state |= modeHatch;
-                } else {
-                    state &= ~modeHatch;
-                }
-                break;
-            case modeGrab:
-                if (value) {
-                    state |= modeGrab;
-                } else {
-                    state &= ~modeGrab;
-                }
-                break;
-            case modeExtend:
-                if (value) {
-                    state |= modeExtend;
-                } else {
-                    state &= ~modeExtend;
-                }
-                break;
-            default:
-                System.out.println("Error: set bad Control mode");
-                break;
-        }
+    public Boolean getGrabbing() {
+        return (state & modeGrab) == modeGrab;
+    }
+
+    public Boolean getExtended() {
+        return (state & modeExtend) == modeExtend;
+    }
+
+    public void setHatchMode() {
+        state |= modeHatch;
+    }
+
+    public void setCargoMode() {
+        state &= ~modeHatch;
+    }
+
+    public void setHatchGrabbed() {
+        state |= modeGrab;
+    }
+    
+    public void setHatchReleased() {
+        state &= ~modeGrab;
+    }
+
+    public void setHatchExtended() {
+        state |= modeExtend;
+    }
+
+    public void setHatchRetracted() {
+        state &= ~modeExtend;
     }
 
     private Boolean handleButton(int mode, int button, Boolean previous, String nameTrue, String nameFalse) {
