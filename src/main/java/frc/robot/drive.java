@@ -29,7 +29,7 @@ public class Drive {
     private static int cargoFactor = 0;
     private static final int unknownFactor = 0;
 
-    public Drive(int config, int mode) {
+    public Drive(int config, Boolean hatchMode) {
         switch (config) {
             case configPractice:
                 talonHL = new WPI_TalonSRX(1);
@@ -51,7 +51,11 @@ public class Drive {
                 System.out.println("ERROR: bad Drive configuration requested");
                 break;
         }
-        setMode(mode);
+        if (hatchMode) {
+            cmdHatchMode();
+        } else {
+            cmdCargoMode();
+        }
         mecanum = new MecanumDrive(talonHL, talonBR, talonHR, talonBL);
     }
 
@@ -70,7 +74,7 @@ public class Drive {
         return current + delta;
     }
 
-    public void move(double forward, double right, double cw) {
+    public void cmdMove(double forward, double right, double cw) {
         if (driveMode != unknownFactor) {
             currentX = xferLimitAccel(currentX, driveMode * forward, accelLimitX);
             currentY = xferLimitAccel(currentY, driveMode * right, accelLimitY);
@@ -79,18 +83,11 @@ public class Drive {
         }
     }
 
-    public void setMode(int mode) {
-        switch (mode) {
-            case modeCargo:
-                driveMode = cargoFactor;
-                break;
-            case modeHatch:
-                driveMode = hatchFactor;
-                break;
-            default:
-                System.out.println("ERROR: bad Drive mode requested");
-                driveMode = unknownFactor;
-                break;
-        }
+    public void cmdCargoMode() {
+        driveMode = cargoFactor;
+    }
+
+    public void cmdHatchMode() {
+        driveMode = hatchFactor;
     }
 }

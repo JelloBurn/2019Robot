@@ -1,9 +1,10 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Solenoid;
+
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
-
-import edu.wpi.first.wpilibj.Solenoid;
 
 public class Cargo {
     private WPI_TalonSRX cargoLeft;
@@ -11,7 +12,11 @@ public class Cargo {
     private WPI_VictorSPX cargoHandler;
     private Solenoid cargoHold;
     private Solenoid cargoDrop;
-    private int timer;
+    private DigitalInput upperLimit;
+
+    private int cargoTimer;
+    private int handlerTimer;
+    private Boolean handlerRising;
 
     private static final double lowerPower = -0.25;
     private static final double raisePower = 0.25;
@@ -23,6 +28,7 @@ public class Cargo {
     private static final int sendTime = 10;
 
     public static final int modeHold = 1;
+    public static final int modeLower = 2;
 
     public Cargo() {
         cargoLeft = new WPI_TalonSRX(5);
@@ -30,36 +36,34 @@ public class Cargo {
         cargoHandler = new WPI_VictorSPX(1);
         cargoHold = new Solenoid(2);
         cargoDrop = new Solenoid(5);
-        timer = 0;
+        upperLimit = new DigitalInput(1);
+        cargoTimer = 0;
+        handlerTimer = 0;
+        handlerRising = false;
     }
 
-    public void lower(int position) {
-        if (timer == 0) {
+    public void cmdDown() {
+        if (cargoTimer == 0) {
             cargoHandler.set(lowerPower);
-            timer = position;
+//            cargoTimer = position;
             System.out.print("lowering cargo to position ");
-            System.out.println(position);
+//            System.out.println(position);
         } else {
             System.out.println("WARNING: ignoring cargoLower request");
         }
     }
 
-    public void raise(int position) {
-        if (timer == 0) {
-            cargoHandler.set(raisePower);
-            timer = position;
-            System.out.print("raising cargo to position ");
-            System.out.println(position);
-        } else {
-            System.out.println("WARNING: ignoring cargoRaise request");
-        }
+    public void cmdRetract() {
+//        handlerRetract = true;
+        cargoHandler.set(raisePower);
+        System.out.println("retracting cargo handler");
     }
 
     public void send() {
-        if (timer == 0) {
+        if (cargoTimer == 0) {
             cargoLeft.set(sendPower);
             cargoRight.set(sendPower);
-            timer = sendTime;
+            cargoTimer = sendTime;
             System.out.println("sending cargo");
         } else {
             System.out.println("WARNING: ignoring cargoSend request");
@@ -70,13 +74,23 @@ public class Cargo {
         switch (mode) {
             case modeHold: cargoHold.set(value);
                            cargoDrop.set(!value);
-                           if (timer == 0 && value == true) {
+                           if (cargoTimer == 0 && value == true) {
                                 cargoLeft.set(recvPower);
                                 cargoRight.set(-recvPower);
-                                timer = recvTime;
+                                cargoTimer = recvTime;
                                 System.out.println("receiving cargo");
                             } else {
                                 System.out.println("WARNING: ignoring cargoRecv request");
+                            }
+                            break;
+            case modeLower: if (handlerTimer == 0) {
+                                if (value) {
+                                    cargoHandler.set(1.0);
+                                    handlerTimer = 50;
+                                } else {
+                                    cargoHandler.set(-1.0);
+                                    handlerRising = true;
+                                }
                             }
                             break;
             //case modeRaise: cargoHandler.set(0.2);
@@ -87,14 +101,24 @@ public class Cargo {
     }
 
     public void periodic() {
-        if (timer > 0) {
-            timer -= 1;
-            if (timer == 0) {
+        if (cargoTimer > 0) {
+            cargoTimer -= 1;
+            if (cargoTimer == 0) {
                 cargoLeft.set(restCargoPower);
                 cargoRight.set(restCargoPower);
-                cargoHandler.set(restHandlePower);
-                System.out.println("powering down cargo motors");
+            System.out.println("powering down cargo motors");
             }
         }
+        if (handlerTimer > 0) {
+            handlerTimer -= 1;
+            if (handlerTimer == 0) {
+                cargoHandler.set(restHandlePower);
+                System.out.println("powering down handler motor");
+            }
+       }
+       if (handlerRising & !upperLimit.get()) {
+           handlerRising = false;
+           cargoHandler.set(restHandlePower);
+       }
     }
 }
