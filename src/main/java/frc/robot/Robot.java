@@ -104,7 +104,7 @@ public class Robot extends TimedRobot {
 
   private void workHatch() {
     m_drive.cmdHatchMode();
-    m_cameraServer.setSource(m_cameraHatch);
+//    m_cameraServer.setSource(m_cameraHatch);
 
     if (m_control.getGrabbing()) {
       m_hatch.cmdGrab();
@@ -119,10 +119,10 @@ public class Robot extends TimedRobot {
     }
   }
 
-  private void workCargo() {
-    m_drive.cmdCargoMode();
-    m_cameraServer.setSource(m_cameraCargo);
-}
+//  private void workCargo() {
+//    m_drive.cmdCargoMode();
+//    m_cameraServer.setSource(m_cameraCargo);
+//  }
 
   /**
    * This function is called periodically during operator control.
@@ -142,11 +142,11 @@ public class Robot extends TimedRobot {
       }
     }
 
-    if (m_control.getHatchMode()) {
+//    if (m_control.getHatchMode()) {
       workHatch();
-    } else {
-      workCargo();
-    }
+//    } else {
+//      workCargo();
+//    }
     
     m_drive.cmdMove(m_control.getDriveX(), m_control.getDriveY(), m_control.getDriveR());
   }
