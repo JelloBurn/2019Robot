@@ -26,8 +26,7 @@ public class Robot extends TimedRobot {
   private final Control m_control = new Control();
   private final Drive m_drive = new Drive(Drive.configCompetition, true);
   private final Hatch m_hatch = new Hatch(Hatch.configCompetition);
-//  private final Cargo m_cargo = new Cargo();
-  private final UsbCamera m_cameraCargo = CameraServer.getInstance().startAutomaticCapture(0);
+  private final UsbCamera m_cameraField = CameraServer.getInstance().startAutomaticCapture(0);
   private final UsbCamera m_cameraHatch = CameraServer.getInstance().startAutomaticCapture(1);
   private VideoSink m_cameraServer = CameraServer.getInstance().getServer();
   private int timerHatchExtend = 0;
@@ -79,8 +78,8 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     System.out.println("Starting autonomousInit() method.");
-    m_hatch.cmdGrab();
-    m_hatch.cmdRetract();
+    m_hatch.cmdGrab(true);
+    m_hatch.cmdExtend(false);
 //    m_cargo.setMode(Cargo.modeHold, true);
     m_control.setHatchGrabbed();
     m_control.setHatchMode();
@@ -103,25 +102,27 @@ public class Robot extends TimedRobot {
   }
 
   private void workHatch() {
-    m_drive.cmdHatchMode();
-//    m_cameraServer.setSource(m_cameraHatch);
-
     if (m_control.getGrabbing()) {
-      m_hatch.cmdGrab();
+      m_hatch.cmdGrab(true);
     } else {
-      m_hatch.cmdRelease();
+      m_hatch.cmdGrab(false);
     }
 
     if (m_control.getExtended()) {
-      m_hatch.cmdExtend();
+      m_hatch.cmdExtend(true);
     } else {
-      m_hatch.cmdRetract();
+      m_hatch.cmdExtend(false);
+    }
+
+    if (m_control.getHatchView()) {
+      m_cameraServer.setSource(m_cameraHatch);
+    } else {
+      m_cameraServer.setSource(m_cameraField);
     }
   }
 
 //  private void workCargo() {
 //    m_drive.cmdCargoMode();
-//    m_cameraServer.setSource(m_cameraCargo);
 //  }
 
   /**
@@ -130,34 +131,25 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     m_control.periodic();
-//    m_cargo.periodic();
 
     if (timerHatchExtend > 0) {
       timerHatchExtend -= 1;
       if (timerHatchExtend == 0) {
         System.out.print("extend hatch at time ");
         System.out.println(timerHatchExtend);
-        m_hatch.cmdExtend();
+        m_hatch.cmdExtend(true);
         m_control.setHatchExtended();
       }
     }
-
-//    if (m_control.getHatchMode()) {
-      workHatch();
-//    } else {
-//      workCargo();
-//    }
-    
+    workHatch();    
     m_drive.cmdMove(m_control.getDriveX(), m_control.getDriveY(), m_control.getDriveR());
   }
 
   @Override
   public void testInit() {
     System.out.println("Starting testInit() method.");
-    m_hatch.cmdRetract();
-    m_hatch.cmdRelease();
-//    m_cargo.setMode(Cargo.modeHold, true);
-//    m_cargo.setMode(Cargo.modeLower, false);
+    m_hatch.cmdExtend(false);
+    m_hatch.cmdGrab(false);
 }
 
   /**
@@ -166,6 +158,5 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
     m_control.periodic();
-//    m_cargo.periodic();
   }
 }

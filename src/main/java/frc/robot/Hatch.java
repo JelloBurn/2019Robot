@@ -34,23 +34,13 @@ public class Hatch {
         }
     }
 
-    public void cmdGrab() {
-        solGrab.set(true);
-        solRelease.set(false);
+    public void cmdGrab(Boolean position) {
+        solGrab.set(position);
+        solRelease.set(!position);
     }
 
-    public void cmdRelease() {
-        solGrab.set(false);
-        solRelease.set(true);
-    }
-
-    public void cmdExtend() {
-        solExtend.set(true);
-        solRetract.set(false);
-    }
-
-    public void cmdRetract() {
-        solExtend.set(false);
-        solRetract.set(true);
+    public void cmdExtend(Boolean position) {
+        solExtend.set(position);
+        solRetract.set(!position);
     }
 }
